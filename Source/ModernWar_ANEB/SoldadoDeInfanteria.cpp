@@ -5,6 +5,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/WidgetComponent.h"
 
 // Sets default values
 ASoldadoDeInfanteria::ASoldadoDeInfanteria()
@@ -23,6 +24,9 @@ ASoldadoDeInfanteria::ASoldadoDeInfanteria()
 
 	bool UseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
+
+	OverHeadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverHeadWidget"));
+	OverHeadWidget->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
