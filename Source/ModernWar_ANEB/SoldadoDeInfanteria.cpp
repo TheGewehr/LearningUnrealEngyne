@@ -6,6 +6,8 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/WidgetComponent.h"
+#include "Net/UnrealNetwork.h"
+#include "Weapons/Weapon.h"
 
 // Sets default values
 ASoldadoDeInfanteria::ASoldadoDeInfanteria()
@@ -29,10 +31,25 @@ ASoldadoDeInfanteria::ASoldadoDeInfanteria()
 	OverHeadWidget->SetupAttachment(RootComponent);
 }
 
+void ASoldadoDeInfanteria::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION(ASoldadoDeInfanteria, OverlappingWeapon, COND_OwnerOnly);
+}
+
 // Called when the game starts or when spawned
 void ASoldadoDeInfanteria::BeginPlay()
 {
 	Super::BeginPlay();
+	
+}
+
+// Called every frame
+void ASoldadoDeInfanteria::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
 	
 }
 
@@ -48,6 +65,8 @@ void ASoldadoDeInfanteria::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 	PlayerInputComponent->BindAxis("Turn", this, &ASoldadoDeInfanteria::Turn);
 	PlayerInputComponent->BindAxis("LookUp", this, &ASoldadoDeInfanteria::LookUp);
 }
+
+
 
 
 
@@ -85,12 +104,35 @@ void ASoldadoDeInfanteria::LookUp(float value)
 	AddControllerPitchInput(value);
 }
 
-// Called every frame
-void ASoldadoDeInfanteria::Tick(float DeltaTime)
+void ASoldadoDeInfanteria::SetOverlappingWeapon(AWeapon* Weapon)
 {
-	Super::Tick(DeltaTime);
+	if (OverlappingWeapon)
+	{
+		OverlappingWeapon->ShowPickUpWidget(false);
+	}
 
+	OverlappingWeapon = Weapon;
+
+	if (IsLocallyControlled()) // Only the local must be able to see it
+	{
+		if (OverlappingWeapon)
+		{
+			OverlappingWeapon->ShowPickUpWidget(true);
+		}
+	}
 }
 
+void ASoldadoDeInfanteria::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
+{
+	if (OverlappingWeapon)
+	{
+		OverlappingWeapon->ShowPickUpWidget(true);
+	}
+
+	if (LastWeapon)
+	{
+		LastWeapon->ShowPickUpWidget(false);
+	}
+}
 
 
