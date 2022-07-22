@@ -33,4 +33,6 @@ void USoldadoDeInfanteriaAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	IsInAir = SoldadoDeInfanteria->GetCharacterMovement()->IsFalling();
 
 	IsAccelerating = SoldadoDeInfanteria->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.f ? true : false;
+
+	WeaponEquipped = SoldadoDeInfanteria->IsWeaponEquipped();
 }

@@ -5,6 +5,7 @@
 #include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
 #include "ModernWar_ANEB/SoldadoDeInfanteria.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AWeapon::AWeapon()
@@ -58,6 +59,13 @@ void AWeapon::Tick(float DeltaTime)
 
 }
 
+void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AWeapon, WeaponState);
+}
+
 void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool FromSweep, const FHitResult& SweepResult)
 {
 	ASoldadoDeInfanteria* SoldadoDeInfanteria = Cast<ASoldadoDeInfanteria>(OtherActor);
@@ -81,6 +89,35 @@ void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 }
 
 
+void AWeapon::SetWeaponState(EWeaponState StateOfWeapon)
+{
+	WeaponState = StateOfWeapon;	
+
+	switch (WeaponState)
+	{
+	case EWeaponState::EWS_Equipped:
+
+		ShowPickUpWidget(false);
+		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		break;
+	}
+}
+
+void AWeapon::OnRep_WeaponState()
+{
+	switch (WeaponState)
+	{
+	case EWeaponState::EWS_Equipped:
+		ShowPickUpWidget(false);
+		
+		break;
+	}
+	
+
+}
+
+
 
 void AWeapon::ShowPickUpWidget(bool ShowWidget)
 {
@@ -89,4 +126,6 @@ void AWeapon::ShowPickUpWidget(bool ShowWidget)
 		PickUpWidget->SetVisibility(ShowWidget);
 	}
 }
+
+
 

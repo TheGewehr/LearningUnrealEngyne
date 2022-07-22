@@ -8,6 +8,7 @@
 #include "Components/WidgetComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Weapons/Weapon.h"
+#include "ComponentesSoldadoDeInfanteria/CombatComponent.h"
 
 // Sets default values
 ASoldadoDeInfanteria::ASoldadoDeInfanteria()
@@ -29,6 +30,9 @@ ASoldadoDeInfanteria::ASoldadoDeInfanteria()
 
 	OverHeadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverHeadWidget"));
 	OverHeadWidget->SetupAttachment(RootComponent);
+
+	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("Combat Component"));
+	Combat->SetIsReplicated(true);
 }
 
 void ASoldadoDeInfanteria::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -37,6 +41,8 @@ void ASoldadoDeInfanteria::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 
 	DOREPLIFETIME_CONDITION(ASoldadoDeInfanteria, OverlappingWeapon, COND_OwnerOnly);
 }
+
+
 
 // Called when the game starts or when spawned
 void ASoldadoDeInfanteria::BeginPlay()
@@ -59,6 +65,7 @@ void ASoldadoDeInfanteria::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+	PlayerInputComponent->BindAction("Equip", IE_Pressed, this, &ThisClass::EquipButtonPressed);
 
 	PlayerInputComponent->BindAxis("Move Forward", this, &ASoldadoDeInfanteria::MooveForward);
 	PlayerInputComponent->BindAxis("Move Right", this, &ASoldadoDeInfanteria::MooveRight);
@@ -66,8 +73,15 @@ void ASoldadoDeInfanteria::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 	PlayerInputComponent->BindAxis("LookUp", this, &ASoldadoDeInfanteria::LookUp);
 }
 
+void ASoldadoDeInfanteria::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
 
-
+	if (Combat)
+	{
+		Combat->SoldadoDeInfanteria = this;
+	}
+}
 
 
 void ASoldadoDeInfanteria::MooveForward(float value)
@@ -104,6 +118,32 @@ void ASoldadoDeInfanteria::LookUp(float value)
 	AddControllerPitchInput(value);
 }
 
+void ASoldadoDeInfanteria::EquipButtonPressed() // The server is the only one to has the Authority to call this function
+{
+	if (Combat)
+	{
+		if (HasAuthority())
+		{
+			Combat->EquipWeapon(OverlappingWeapon);
+		}
+		else
+		{
+			ServerEquipButtonPressed();
+		}
+		
+	}
+
+	
+}
+
+void ASoldadoDeInfanteria::ServerEquipButtonPressed_Implementation()
+{
+	if (Combat)
+	{
+		Combat->EquipWeapon(OverlappingWeapon);
+	}
+}
+
 void ASoldadoDeInfanteria::SetOverlappingWeapon(AWeapon* Weapon)
 {
 	if (OverlappingWeapon)
@@ -120,6 +160,11 @@ void ASoldadoDeInfanteria::SetOverlappingWeapon(AWeapon* Weapon)
 			OverlappingWeapon->ShowPickUpWidget(true);
 		}
 	}
+}
+
+bool ASoldadoDeInfanteria::IsWeaponEquipped()
+{
+	return (Combat && Combat->EquippedWeapon);
 }
 
 void ASoldadoDeInfanteria::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
