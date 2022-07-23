@@ -28,6 +28,22 @@ void UCombatComponent::BeginPlay()
 	
 }
 
+void UCombatComponent::SetAiming(bool IsItAiming)
+{
+	IsAiming = IsItAiming; // Set locally
+
+	// What is commented is not necessary
+	//if (!SoldadoDeInfanteria->HasAuthority()) // I it is not the server
+	//{
+	ServerSetAiming(IsItAiming); // Set to the authority (Server)
+	//}
+}
+
+void UCombatComponent::ServerSetAiming_Implementation(bool IsItAiming)
+{
+	IsAiming = IsItAiming;
+}
+
 
 // Called every frame
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -64,5 +80,6 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(UCombatComponent, EquippedWeapon);
+	DOREPLIFETIME(UCombatComponent, IsAiming);
 }
 

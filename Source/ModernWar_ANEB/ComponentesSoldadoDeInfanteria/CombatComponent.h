@@ -27,11 +27,18 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+	void SetAiming(bool IsItAiming);
+
+	UFUNCTION(Server, Reliable)
+	void ServerSetAiming(bool IsItAiming);
+
 private:
 	class ASoldadoDeInfanteria* SoldadoDeInfanteria;
 
 	UPROPERTY(Replicated)
 	AWeapon* EquippedWeapon;
 
+	UPROPERTY(Replicated)
+	bool IsAiming;
 		
 };

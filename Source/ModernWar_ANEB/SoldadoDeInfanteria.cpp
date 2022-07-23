@@ -33,6 +33,8 @@ ASoldadoDeInfanteria::ASoldadoDeInfanteria()
 
 	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("Combat Component"));
 	Combat->SetIsReplicated(true);
+
+	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 }
 
 void ASoldadoDeInfanteria::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -66,6 +68,9 @@ void ASoldadoDeInfanteria::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Equip", IE_Pressed, this, &ThisClass::EquipButtonPressed);
+	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ThisClass::CrouchButtonPressed);
+	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &ThisClass::AimButtonPressed);
+	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &ThisClass::AimButtonReleased);
 
 	PlayerInputComponent->BindAxis("Move Forward", this, &ASoldadoDeInfanteria::MooveForward);
 	PlayerInputComponent->BindAxis("Move Right", this, &ASoldadoDeInfanteria::MooveRight);
@@ -136,6 +141,36 @@ void ASoldadoDeInfanteria::EquipButtonPressed() // The server is the only one to
 	
 }
 
+void ASoldadoDeInfanteria::CrouchButtonPressed()
+{
+	if (bIsCrouched == false)
+	{
+		Crouch();
+	}
+	else
+	{
+		UnCrouch();
+	}
+	
+
+}
+
+void ASoldadoDeInfanteria::AimButtonPressed()
+{
+	if (Combat)
+	{
+		Combat->SetAiming(true);
+	}
+}
+
+void ASoldadoDeInfanteria::AimButtonReleased()
+{
+	if (Combat)
+	{
+		Combat->SetAiming(false);
+	}
+}
+
 void ASoldadoDeInfanteria::ServerEquipButtonPressed_Implementation()
 {
 	if (Combat)
@@ -165,6 +200,11 @@ void ASoldadoDeInfanteria::SetOverlappingWeapon(AWeapon* Weapon)
 bool ASoldadoDeInfanteria::IsWeaponEquipped()
 {
 	return (Combat && Combat->EquippedWeapon);
+}
+
+bool ASoldadoDeInfanteria::IsSoldierAiming()
+{
+	return (Combat && Combat->IsAiming);
 }
 
 void ASoldadoDeInfanteria::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
