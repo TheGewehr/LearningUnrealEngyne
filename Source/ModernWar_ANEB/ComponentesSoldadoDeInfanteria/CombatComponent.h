@@ -32,10 +32,13 @@ protected:
 	UFUNCTION(Server, Reliable)
 	void ServerSetAiming(bool IsItAiming);
 
+	UFUNCTION()
+	void OnRep_EquippedWeapon();
+
 private:
 	class ASoldadoDeInfanteria* SoldadoDeInfanteria;
 
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
 	AWeapon* EquippedWeapon;
 
 	UPROPERTY(Replicated)

@@ -7,6 +7,7 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Components/SphereComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values for this component's properties
 UCombatComponent::UCombatComponent()
@@ -37,6 +38,16 @@ void UCombatComponent::SetAiming(bool IsItAiming)
 	//{
 	ServerSetAiming(IsItAiming); // Set to the authority (Server)
 	//}
+}
+
+void UCombatComponent::OnRep_EquippedWeapon()
+{
+	if (EquippedWeapon && SoldadoDeInfanteria)
+	{
+		SoldadoDeInfanteria->GetCharacterMovement()->bOrientRotationToMovement = false;
+		SoldadoDeInfanteria->bUseControllerRotationYaw = true;
+
+	}
 }
 
 void UCombatComponent::ServerSetAiming_Implementation(bool IsItAiming)
@@ -72,6 +83,7 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	}
 
 	EquippedWeapon->SetOwner(SoldadoDeInfanteria);
+
 	
 }
 
