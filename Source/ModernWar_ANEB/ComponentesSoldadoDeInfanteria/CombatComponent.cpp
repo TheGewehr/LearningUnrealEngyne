@@ -16,7 +16,8 @@ UCombatComponent::UCombatComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = false;
 
-	
+	BaseWalkSpeed = 600.f;
+	AimWalkSpeed = 450.f;
 }
 
 
@@ -26,6 +27,11 @@ void UCombatComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
+
+	if (SoldadoDeInfanteria)
+	{
+		SoldadoDeInfanteria->GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
+	}
 	
 }
 
@@ -38,6 +44,22 @@ void UCombatComponent::SetAiming(bool IsItAiming)
 	//{
 	ServerSetAiming(IsItAiming); // Set to the authority (Server)
 	//}
+
+
+	if (SoldadoDeInfanteria)
+	{
+		SoldadoDeInfanteria->GetCharacterMovement()->MaxWalkSpeed = IsItAiming ? AimWalkSpeed : BaseWalkSpeed;
+	}
+}
+
+void UCombatComponent::ServerSetAiming_Implementation(bool IsItAiming)
+{
+	IsAiming = IsItAiming;
+
+	if (SoldadoDeInfanteria)
+	{
+		SoldadoDeInfanteria->GetCharacterMovement()->MaxWalkSpeed = IsItAiming ? AimWalkSpeed : BaseWalkSpeed;
+	}
 }
 
 void UCombatComponent::OnRep_EquippedWeapon()
@@ -50,10 +72,7 @@ void UCombatComponent::OnRep_EquippedWeapon()
 	}
 }
 
-void UCombatComponent::ServerSetAiming_Implementation(bool IsItAiming)
-{
-	IsAiming = IsItAiming;
-}
+
 
 
 // Called every frame

@@ -9,6 +9,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Weapons/Weapon.h"
 #include "ComponentesSoldadoDeInfanteria/CombatComponent.h"
+#include "Components/CapsuleComponent.h"
 
 // Sets default values
 ASoldadoDeInfanteria::ASoldadoDeInfanteria()
@@ -20,6 +21,7 @@ ASoldadoDeInfanteria::ASoldadoDeInfanteria()
 	CameraBoom->SetupAttachment(GetMesh());
 	CameraBoom->TargetArmLength = 600;
 	CameraBoom->bUsePawnControlRotation = true;
+	//bUseControllerRotationYaw = true;
 
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
@@ -35,6 +37,10 @@ ASoldadoDeInfanteria::ASoldadoDeInfanteria()
 	Combat->SetIsReplicated(true);
 
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+
+	
 }
 
 void ASoldadoDeInfanteria::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -50,6 +56,7 @@ void ASoldadoDeInfanteria::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 void ASoldadoDeInfanteria::BeginPlay()
 {
 	Super::BeginPlay();
+	bUseControllerRotationYaw = true;
 	
 }
 
@@ -70,7 +77,7 @@ void ASoldadoDeInfanteria::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 	PlayerInputComponent->BindAction("Equip", IE_Pressed, this, &ThisClass::EquipButtonPressed);
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ThisClass::CrouchButtonPressed);
 	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &ThisClass::AimButtonPressed);
-	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &ThisClass::AimButtonReleased);
+	PlayerInputComponent->BindAction("Aim", IE_Released, this, &ThisClass::AimButtonReleased);
 
 	PlayerInputComponent->BindAxis("Move Forward", this, &ASoldadoDeInfanteria::MooveForward);
 	PlayerInputComponent->BindAxis("Move Right", this, &ASoldadoDeInfanteria::MooveRight);
