@@ -55,4 +55,7 @@ void USoldadoDeInfanteriaAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	const float Target = Delta.Yaw / DeltaTime;
 	const float Interp = FMath::FInterpTo(Lean, Target, DeltaTime, 6.f);
 	Lean = FMath::Clamp(Interp, -90.f, 90.f);
+
+	AO_Yaw = SoldadoDeInfanteria->GetAO_Yaw();
+	AO_Pitch = SoldadoDeInfanteria->GetAO_Pitch();
 }

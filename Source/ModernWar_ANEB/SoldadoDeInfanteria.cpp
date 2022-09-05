@@ -10,6 +10,7 @@
 #include "Weapons/Weapon.h"
 #include "ComponentesSoldadoDeInfanteria/CombatComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 ASoldadoDeInfanteria::ASoldadoDeInfanteria()
@@ -65,6 +66,7 @@ void ASoldadoDeInfanteria::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	AimOffset(DeltaTime);
 	
 }
 
@@ -176,6 +178,34 @@ void ASoldadoDeInfanteria::AimButtonReleased()
 	{
 		Combat->SetAiming(false);
 	}
+}
+
+void ASoldadoDeInfanteria::AimOffset(float DeltaTime)
+{
+	if (Combat && Combat->EquippedWeapon == nullptr) return;
+
+	FVector Velocity = GetVelocity();
+	Velocity.Z = 0.f;
+	float Speed = Velocity.Size();
+	bool IsInAir = GetCharacterMovement()->IsFalling();
+
+	if (Speed == 0.f && !IsInAir)
+	{
+		FRotator CurrentAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+		FRotator DeltaAimRotation = UKismetMathLibrary::NormalizedDeltaRotator( CurrentAimRotation, StartingAimRotation);
+
+		AO_Yaw = DeltaAimRotation.Yaw;
+		bUseControllerRotationYaw = false;
+	}
+	if (Speed > 0.f || IsInAir)
+	{
+		StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+		AO_Yaw = 0.f;
+		bUseControllerRotationYaw = true;
+	}
+
+	bUseControllerRotationPitch = false;
+	AO_Pitch = GetBaseAimRotation().Pitch;
 }
 
 void ASoldadoDeInfanteria::ServerEquipButtonPressed_Implementation()
